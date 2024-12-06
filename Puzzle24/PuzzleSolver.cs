@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Puzzle24
 {
-    internal class Puzzle24
+    public class PuzzleSolver
     {
         public enum Op
         {
@@ -15,7 +15,7 @@ namespace Puzzle24
             Multiply,
             Divide,
         }
-        public Puzzle24(params int[] items)
+        public PuzzleSolver(params int[] items)
         {
             _items = items;
         }
@@ -25,6 +25,7 @@ namespace Puzzle24
             ops = new Op[3];
             foreach (var item in p)
             {
+                // Console.WriteLine($"item = {item[0]}, {item[1]}, {item[2]}, {item[3]}");
                 var arr = item.ToArray();
                 var s = item[0];
                 var span = arr.AsSpan().Slice(1);
@@ -41,8 +42,7 @@ namespace Puzzle24
         private enum FoldResult
         {
             Success,
-            Fail,
-            Proceed,
+            NotFound,
         }
         private struct ResultInfo
         {
@@ -61,28 +61,31 @@ namespace Puzzle24
             {
                 if (acc == 24)
                 {
+                    Console.WriteLine($"success");
                     return new ResultInfo(FoldResult.Success, acc);
                 }
-                return new ResultInfo(FoldResult.Proceed, acc);
+                // Console.WriteLine($"proceed, acc = {acc}");
+                return new ResultInfo(FoldResult.NotFound, acc);
             }
             for (Op op = Op.Plus; op <= Op.Divide; op++)
             {
                 var newAcc = GetResult(acc, op, items[0]);
                 if (newAcc < 0)
                 {
+                    // Console.WriteLine($"continue, {acc} {op} {items[0]} = {newAcc}");
                     continue;
                 }
                 ops[0] = op;
                 var ret = GetResult(items.Slice(1), newAcc, ops.Slice(1));
-                if (ret.result == FoldResult.Proceed)
+                if (ret.result == FoldResult.NotFound)
                 {
                     continue;
                 }
                 return ret;
             }
-            return new ResultInfo(FoldResult.Fail, -1);
+            return new ResultInfo(FoldResult.NotFound, -1);
         }
-        private static int GetResult(int acc, Op op, int value)
+        public static int GetResult(int acc, Op op, int value)
         {
             switch (op)
             {
@@ -101,10 +104,26 @@ namespace Puzzle24
             }
             return -1;
         }
-
-        public string GetResult()
+        public static string PrintResult(IList<int> item, Op[] ops)
         {
-            return string.Empty;
+            StringBuilder ss = new StringBuilder();
+            var i = 0;
+            var result = item[i];
+            var old = result;
+            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+            ss.AppendLine($"{old} {ops[i]} {item[i + 1]} = {result}");
+
+            i++;
+            old = result;
+            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+            ss.AppendLine($"{old} {ops[i]} {item[i + 1]} = {result}");
+
+            i++;
+            old = result;
+            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+            ss.AppendLine($"{old} {ops[i]} {item[i + 1]} = {result}");
+
+            return ss.ToString();
         }
 
         private int[] _items;
