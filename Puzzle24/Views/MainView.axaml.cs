@@ -1,16 +1,15 @@
-using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
+using System;
 
 namespace Puzzle24.Views;
 
-public partial class MainWindow : Window
+public partial class MainView : UserControl
 {
-    public MainWindow()
+    public MainView()
     {
         InitializeComponent();
     }
-
     private void Button_OnClick(object? sender, RoutedEventArgs e)
     {
         try

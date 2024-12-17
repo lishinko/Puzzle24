@@ -1,7 +1,7 @@
-﻿using Avalonia;
-using System;
+﻿using System;
+using Avalonia;
 
-namespace Puzzle24;
+namespace Puzzle24.Desktop;
 
 sealed class Program
 {
