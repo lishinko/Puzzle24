@@ -5,21 +5,27 @@
              xmlns:vm="clr-namespace:Puzzle24.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Puzzle24.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+			 xmlns:conv="using:Puzzle24"
+			 >
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-	<StackPanel Orientation="Vertical" Margin="20" Spacing="10">
-		<TextBlock HorizontalAlignment="Center" Margin="6" FontSize="24">输入4个数字</TextBlock>
-		<StackPanel HorizontalAlignment="Center" Margin="20" Orientation="Horizontal" Spacing="30">
-			<TextBox FontSize="24" Text="{Binding Data0}"></TextBox>
-			<TextBox FontSize="24" Text="{Binding Data1}"></TextBox>
-			<TextBox FontSize="24" Text="{Binding Data2}"></TextBox>
-			<TextBox FontSize="24" Text="{Binding Data3}"></TextBox>
-		</StackPanel>
-		<Button HorizontalAlignment="Center" Margin="6" FontSize="24" Command="{Binding RunSolver}">开始计算</Button>
-		<TextBlock FontSize="36" HorizontalAlignment="Center" Text="{Binding Result}"></TextBlock>
+	<!--UserControl.Resources>
+		<conv:StringToIntConverter x:Key="StringToInt"/>
+	</UserControl.Resources-->
+<StackPanel Orientation="Vertical" Margin="20" Spacing="10">
+	<TextBlock HorizontalAlignment="Center" Margin="6" FontSize="24">输入4个数字</TextBlock>
+	<StackPanel HorizontalAlignment="Center" Margin="20" Orientation="Horizontal" Spacing="30">
+		<TextBox FontSize="24" Text="{Binding Data0}"></TextBox>
+		<TextBox FontSize="24" Text="{Binding Data1}"></TextBox>
+		<TextBox FontSize="24" Text="{Binding Data2}"></TextBox>
+		<!--TextBox FontSize="24" Text="{Binding Data3, Converter={StaticResource StringToInt}}"></TextBox-->
+		<TextBox FontSize="24" Text="{Binding Data3}"></TextBox>
 	</StackPanel>
+	<Button HorizontalAlignment="Center" Margin="6" FontSize="24" Command="{Binding RunSolver}">开始计算</Button>
+	<TextBlock FontSize="36" HorizontalAlignment="Center" Text="{Binding Result}"></TextBlock>
+</StackPanel>
 </UserControl>
