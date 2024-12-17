@@ -14,12 +14,12 @@
 	<StackPanel Orientation="Vertical" Margin="20" Spacing="10">
 		<TextBlock HorizontalAlignment="Center" Margin="6" FontSize="24">输入4个数字</TextBlock>
 		<StackPanel HorizontalAlignment="Center" Margin="20" Orientation="Horizontal" Spacing="30">
-			<TextBox Watermark="12" FontSize="24" Name="T0"></TextBox>
-			<TextBox Watermark="34" FontSize="24" Name="T1"></TextBox>
-			<TextBox Watermark="56" FontSize="24" Name="T2"></TextBox>
-			<TextBox Watermark="78" FontSize="24" Name="T3"></TextBox>
+			<TextBox FontSize="24" Text="{Binding Data0}"></TextBox>
+			<TextBox FontSize="24" Text="{Binding Data1}"></TextBox>
+			<TextBox FontSize="24" Text="{Binding Data2}"></TextBox>
+			<TextBox FontSize="24" Text="{Binding Data3}"></TextBox>
 		</StackPanel>
-		<Button HorizontalAlignment="Center" Margin="6" FontSize="24" Click="Button_OnClick">开始计算</Button>
-		<TextBlock FontSize="36" HorizontalAlignment="Center" Name="Result">还没有计算出来结果</TextBlock>
+		<Button HorizontalAlignment="Center" Margin="6" FontSize="24" Command="{Binding RunSolver}">开始计算</Button>
+		<TextBlock FontSize="36" HorizontalAlignment="Center" Text="{Binding Result}"></TextBlock>
 	</StackPanel>
 </UserControl>
