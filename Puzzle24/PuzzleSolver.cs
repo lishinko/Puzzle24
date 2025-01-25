@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Puzzle24
 {
-    public class PuzzleSolver
+    public class PuzzleSolver(params int[] items)
     {
         public enum Op
         {
@@ -15,13 +15,10 @@ namespace Puzzle24
             Multiply,
             Divide,
         }
-        public PuzzleSolver(params int[] items)
+
+        public bool Solve24(out IList<int> items1, out Op[] ops)
         {
-            _items = items;
-        }
-        public bool Solve24(out IList<int> items, out Op[] ops)
-        {
-            var p = new Permutation(_items);
+            var p = new Permutation(items);
             ops = new Op[3];
             foreach (var item in p)
             {
@@ -32,11 +29,11 @@ namespace Puzzle24
                 var r = GetResult(span, s, ops.AsSpan());
                 if (r.value == 24)
                 {
-                    items = item;
+                    items1 = item;
                     return true;
                 }
             }
-            items = _items;
+            items1 = items;
             return false;
         }
         private enum FoldResult
@@ -44,15 +41,10 @@ namespace Puzzle24
             Success,
             NotFound,
         }
-        private struct ResultInfo
+        private struct ResultInfo(FoldResult r, int v)
         {
-            public ResultInfo(FoldResult r, int v)
-            {
-                result = r;
-                value = v;
-            }
-            public FoldResult result;
-            public int value;
+            public FoldResult result = r;
+            public int value = v;
         }
 
         private static ResultInfo GetResult(Span<int> items, int acc, Span<Op> ops)
@@ -67,7 +59,7 @@ namespace Puzzle24
                 // Console.WriteLine($"proceed, acc = {acc}");
                 return new ResultInfo(FoldResult.NotFound, acc);
             }
-            for (Op op = Op.Plus; op <= Op.Divide; op++)
+            for (var op = Op.Plus; op <= Op.Divide; op++)
             {
                 var newAcc = GetResult(acc, op, items[0]);
                 if (newAcc < 0)
@@ -85,7 +77,8 @@ namespace Puzzle24
             }
             return new ResultInfo(FoldResult.NotFound, -1);
         }
-        public static int GetResult(int acc, Op op, int value)
+
+        private static int GetResult(int acc, Op op, int value)
         {
             switch (op)
             {
@@ -101,6 +94,8 @@ namespace Puzzle24
                         return acc / value;
                     }
                     return -1;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(op), op, null);
             }
             return -1;
         }
@@ -127,20 +122,14 @@ namespace Puzzle24
         }
         private static string Op2Symbol(Op op)
         {
-            switch (op)
+            return op switch
             {
-                case Op.Minus:
-                    return "-";
-                case Op.Plus:
-                    return "+";
-                case Op.Multiply:
-                    return "x";
-                case Op.Divide:
-                    return "/";
-            }
-            return "+";
+                Op.Minus => "-",
+                Op.Plus => "+",
+                Op.Multiply => "x",
+                Op.Divide => "/",
+                _ => "+"
+            };
         }
-
-        private int[] _items;
     }
 }
