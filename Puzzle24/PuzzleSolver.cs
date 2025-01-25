@@ -1,135 +1,157 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Puzzle24
+namespace Puzzle24;
+
+public class PuzzleSolver(params int[] items)
 {
-    public class PuzzleSolver(params int[] items)
+    public enum Op
     {
-        public enum Op
-        {
-            Plus,
-            Minus,
-            Multiply,
-            Divide,
-        }
+        Plus,
+        Minus,
+        Multiply,
+        Divide,
+    }
 
-        public bool Solve24(out IList<int> items1, out Op[] ops)
+    public bool Solve24(out IList<int> items1, out Op[] ops)
+    {
+        var p = new Permutation(items);
+        var opElements = new List<int>
         {
-            var p = new Permutation(items);
-            ops = new Op[3];
-            foreach (var item in p)
+            (int)Op.Plus,
+            (int)Op.Minus,
+            (int)Op.Multiply,
+            (int)Op.Divide,
+        };
+        var o = new Catesian(opElements.ToArray(), 3);
+        foreach (var item in p)
+        {
+            foreach (var op in o)
             {
-                // Console.WriteLine($"item = {item[0]}, {item[1]}, {item[2]}, {item[3]}");
-                var arr = item.ToArray();
-                var s = item[0];
-                var span = arr.AsSpan().Slice(1);
-                var r = GetResult(span, s, ops.AsSpan());
-                if (r.value == 24)
+                if (GetResult1(item, op) == 24)
                 {
                     items1 = item;
+                    ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
+                    return true;
+                }
+
+                if (GetResult2(item, op) == 24)
+                {
+                    items1 = item;
+                    ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
                     return true;
                 }
             }
-            items1 = items;
-            return false;
-        }
-        private enum FoldResult
-        {
-            Success,
-            NotFound,
-        }
-        private struct ResultInfo(FoldResult r, int v)
-        {
-            public FoldResult result = r;
-            public int value = v;
         }
 
-        private static ResultInfo GetResult(Span<int> items, int acc, Span<Op> ops)
-        {
-            if (items.Length <= 0)
-            {
-                if (acc == 24)
-                {
-                    Console.WriteLine($"success");
-                    return new ResultInfo(FoldResult.Success, acc);
-                }
-                // Console.WriteLine($"proceed, acc = {acc}");
-                return new ResultInfo(FoldResult.NotFound, acc);
-            }
-            for (var op = Op.Plus; op <= Op.Divide; op++)
-            {
-                var newAcc = GetResult(acc, op, items[0]);
-                if (newAcc < 0)
-                {
-                    // Console.WriteLine($"continue, {acc} {op} {items[0]} = {newAcc}");
-                    continue;
-                }
-                ops[0] = op;
-                var ret = GetResult(items.Slice(1), newAcc, ops.Slice(1));
-                if (ret.result == FoldResult.NotFound)
-                {
-                    continue;
-                }
-                return ret;
-            }
-            return new ResultInfo(FoldResult.NotFound, -1);
-        }
+        ops = null;
+        items1 = null;
 
-        private static int GetResult(int acc, Op op, int value)
+        return false;
+    }
+
+    /// <summary>
+    /// result = (i0 op0 i1) op1 (i2 op2 i3)
+    /// 2叉树的第5种可能
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="op"></param>
+    /// <returns></returns>
+    private int GetResult2(IList<int> item, List<int> op)
+    {
+        int left = GetResult(item[0], (Op)op[0], item[1]);
+        if (left < 0)
         {
-            switch (op)
-            {
-                case Op.Plus:
-                    return acc + value;
-                case Op.Minus:
-                    return acc - value;
-                case Op.Multiply:
-                    return acc * value;
-                case Op.Divide:
-                    if (acc % value == 0)
-                    {
-                        return acc / value;
-                    }
-                    return -1;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(op), op, null);
-            }
             return -1;
         }
-        public static string PrintResult(IList<int> item, Op[] ops)
+        int right = GetResult(item[2], (Op)op[2], item[3]);
+        if (right < 0)
         {
-            StringBuilder ss = new StringBuilder();
-            var i = 0;
-            var result = item[i];
-            var old = result;
-            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
-            ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
-
-            i++;
-            old = result;
-            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
-            ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
-
-            i++;
-            old = result;
-            result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
-            ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
-
-            return ss.ToString();
+            return -1;
         }
-        private static string Op2Symbol(Op op)
+        int acc = GetResult(left, (Op)op[1], right);
+        return acc;
+    }
+
+    /// <summary>
+    /// result = ((i0 op0 i1) op1 i2) op2 i3
+    /// 3节点2叉树有5种可能，
+    /// 但是因为我们的op,item都是有重复元素的，
+    /// 所以这一种运算符顺序就可以代表4种2叉树了
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="op"></param>
+    /// <returns></returns>
+    private static int GetResult1(IList<int> item, List<int> op)
+    {
+        int acc = GetResult(item[0], (Op)op[0], item[1]);
+        if (acc < 0)
         {
-            return op switch
-            {
-                Op.Minus => "-",
-                Op.Plus => "+",
-                Op.Multiply => "x",
-                Op.Divide => "/",
-                _ => "+"
-            };
+            return -1;
         }
+        acc = GetResult(acc, (Op)op[1], item[2]);
+        if (acc < 0)
+        {
+            return -1;
+        }
+        acc = GetResult(acc, (Op)op[2], item[3]);
+        return acc;
+    }
+
+    private static int GetResult(int acc, Op op, int value)
+    {
+        switch (op)
+        {
+            case Op.Plus:
+                return acc + value;
+            case Op.Minus:
+                return acc - value;
+            case Op.Multiply:
+                return acc * value;
+            case Op.Divide:
+                if (acc % value == 0)
+                {
+                    return acc / value;
+                }
+
+                return -1;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(op), op, null);
+        }
+    }
+
+    public static string PrintResult(IList<int> item, Op[] ops)
+    {
+        StringBuilder ss = new StringBuilder();
+        var i = 0;
+        var result = item[i];
+        var old = result;
+        result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+        ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
+
+        i++;
+        old = result;
+        result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+        ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
+
+        i++;
+        old = result;
+        result = PuzzleSolver.GetResult(old, ops[i], item[i + 1]);
+        ss.AppendLine($"{old} {Op2Symbol(ops[i])} {item[i + 1]} = {result}");
+
+        return ss.ToString();
+    }
+
+    private static string Op2Symbol(Op op)
+    {
+        return op switch
+        {
+            Op.Minus => "-",
+            Op.Plus => "+",
+            Op.Multiply => "x",
+            Op.Divide => "/",
+            _ => "+"
+        };
     }
 }

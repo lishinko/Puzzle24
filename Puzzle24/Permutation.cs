@@ -7,25 +7,22 @@ using System.Threading.Tasks;
 
 namespace Puzzle24
 {
-    internal class Permutation : IEnumerable<IList<int>>
+    internal class Permutation(int[] nums) : IEnumerable<IList<int>>
     {
-        public Permutation(int[] nums)
-        {
-            _nums = nums;
-        }
         public IEnumerator<IList<int>> GetEnumerator() {
-            var perms = Permute(_nums);
+            var perms = Permute(nums);
             foreach (var perm in perms) {
                 yield return perm;
             }
         }
-        static IList<IList<int>> Permute(int[] nums)
+
+        private static IList<IList<int>> Permute(int[] nums)
         {
             var list = new List<IList<int>>();
             return DoPermute(nums, 0, nums.Length - 1, list);
         }
 
-        static IList<IList<int>> DoPermute(int[] nums, int start, int end, IList<IList<int>> list)
+        private static IList<IList<int>> DoPermute(int[] nums, int start, int end, IList<IList<int>> list)
         {
             if (start == end)
             {
@@ -46,11 +43,9 @@ namespace Puzzle24
             return list;
         }
 
-        static void Swap(ref int a, ref int b)
+        private static void Swap(ref int a, ref int b)
         {
-            var temp = a;
-            a = b;
-            b = temp;
+            (a, b) = (b, a);
         }
         static void PrintResult(IList<IList<int>> lists)
         {
@@ -66,7 +61,5 @@ namespace Puzzle24
         {
             throw new NotImplementedException();
         }
-
-        private int[] _nums;
     }
 }
