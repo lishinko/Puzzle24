@@ -14,8 +14,10 @@ public class PuzzleSolver(params int[] items)
         Divide,
     }
 
-    public bool Solve24(out IList<int> items1, out Op[] ops)
+    public bool Solve24(out IList<int>? items1, out Op[]? ops)
     {
+        ops = null;
+        items1 = null;
         var p = new Permutation(items);
         var opElements = new List<int>
         {
@@ -29,24 +31,32 @@ public class PuzzleSolver(params int[] items)
         {
             foreach (var op in o)
             {
-                if (GetResult1(item, op) == 24)
+                int resultType = 1;
+                try
                 {
-                    items1 = item;
-                    ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
-                    return true;
+                    if (GetResult1(item, op) == 24)
+                    {
+                        items1 = item;
+                        ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
+                        return true;
+                    }
+                    resultType = 2;
+                    if (GetResult2(item, op) == 24)
+                    {
+                        items1 = item;
+                        ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
+                        return true;
+                    }
                 }
-
-                if (GetResult2(item, op) == 24)
+                catch (Exception e)
                 {
-                    items1 = item;
-                    ops = [(Op)op[0], (Op)op[1], (Op)op[2]];
-                    return true;
+                    Console.WriteLine($"error: {e}\n result: {resultType}, items = [{item[0]}, {item[1]}, {item[2]}, {item[3]}], op = [{(Op)op[0]}, {(Op)op[1]}, {(Op)op[2]}]");
+                    return false;
                 }
+                
             }
         }
 
-        ops = null;
-        items1 = null;
 
         return false;
     }
@@ -70,6 +80,11 @@ public class PuzzleSolver(params int[] items)
         {
             return -1;
         }
+
+        if (right == 0 && (Op)op[1] == Op.Divide)//右侧 == 0无法作除法
+        {
+            return -1;
+        }
         int acc = GetResult(left, (Op)op[1], right);
         return acc;
     }
@@ -79,6 +94,7 @@ public class PuzzleSolver(params int[] items)
     /// 3节点2叉树有5种可能，
     /// 但是因为我们的op,item都是有重复元素的，
     /// 所以这一种运算符顺序就可以代表4种2叉树了
+    /// 注意item里面是没有0的，所以这种左 op 右的运算方式不会除0异常
     /// </summary>
     /// <param name="item"></param>
     /// <param name="op"></param>
